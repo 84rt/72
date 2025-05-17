@@ -183,20 +183,33 @@ const Question: FC<QuestionProps> = ({
           </div>
 
           <div className="flex justify-center gap-4 mt-4">
-            <Button 
-              onClick={handleSubmit} 
-              disabled={!isQuestionActive}
-              className="w-32"
-            >
-              Submit
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={toggleHint}
-              className="w-32"
-            >
-              {showHint ? 'Hide Hint' : 'Show Hint'}
-            </Button>
+            {isQuestionActive ? (
+              <>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={!isQuestionActive}
+                  className="w-32"
+                >
+                  Submit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={toggleHint}
+                  className="w-32"
+                >
+                  {showHint ? 'Hide Hint' : 'Show Hint'}
+                </Button>
+              </>
+            ) : (
+              feedbackMessage && (
+                <Button 
+                  onClick={generateNewQuestion}
+                  className="w-32"
+                >
+                  Next Question
+                </Button>
+              )
+            )}
           </div>
 
           {feedbackMessage && (

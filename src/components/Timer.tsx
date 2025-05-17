@@ -13,13 +13,27 @@ const Timer: React.FC<TimerProps> = ({ isTimedMode, isActive, timeLimit, onTimeU
   const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [progress, setProgress] = useState(100);
 
+  // Only reset timer when isActive transitions from false to true, or timeLimit changes
+  const [prevActive, setPrevActive] = useState(isActive);
+  const [prevTimeLimit, setPrevTimeLimit] = useState(timeLimit);
+
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
+    let timer: NodeJS.Timeout | undefined;
+    let shouldReset = false;
+
+    if ((isActive && !prevActive) || timeLimit !== prevTimeLimit) {
+      shouldReset = true;
+    }
+
+    setPrevActive(isActive);
+    setPrevTimeLimit(timeLimit);
+
     if (isTimedMode && isActive) {
-      setTimeLeft(timeLimit);
-      setProgress(100);
-      
+      if (shouldReset) {
+        setTimeLeft(timeLimit);
+        setProgress(100);
+      }
+
       timer = setInterval(() => {
         setTimeLeft(prevTime => {
           const newTime = prevTime - 0.1;
@@ -28,16 +42,14 @@ const Timer: React.FC<TimerProps> = ({ isTimedMode, isActive, timeLimit, onTimeU
             onTimeUp();
             return 0;
           }
-          
           // Calculate new progress percentage
           const newProgress = (newTime / timeLimit) * 100;
           setProgress(newProgress);
-          
           return newTime;
         });
       }, 100);
     }
-    
+
     return () => {
       if (timer) clearInterval(timer);
     };
