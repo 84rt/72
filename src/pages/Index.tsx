@@ -76,10 +76,9 @@ const Index = () => {
                 children: (
                   <>
                     <ModeToggle isTimedMode={isTimedMode} onModeChange={handleModeChange} />
-                    <ScoreDisplay 
-                      currentScore={currentScore} 
-                      highestScore={highestScore} 
-                      onResetScore={handleResetScore}
+                    <ScoreDisplay
+                      currentScore={currentScore}
+                      highestScore={highestScore}
                     />
                     <Question 
                       isTimedMode={isTimedMode}

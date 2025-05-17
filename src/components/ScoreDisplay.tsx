@@ -1,11 +1,9 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 
 interface ScoreDisplayProps {
   currentScore: number;
   highestScore: number;
-  onResetScore: () => void;
 }
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ currentScore, highestScore, onResetScore }) => {
@@ -22,15 +20,7 @@ const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ currentScore, highestScore,
           <div className="text-2xl font-bold text-[#6e6c64]">{highestScore}</div>
         </div>
       </div>
-      <div className="flex flex-row justify-end mt-1">
-        <Button
-          variant="outline"
-          onClick={onResetScore}
-          className="border border-[#847e58] text-[#847e58] hover:bg-[#f7f3e9] hover:text-[#6e6c64] px-3 py-1 text-sm rounded newspaper-font shadow-none"
-        >
-          Reset Score
-        </Button>
-      </div>
+
     </div>
   );
 };
