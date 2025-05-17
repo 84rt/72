@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { SimpleTabs } from '@/components/SimpleTabs';
 import RuleExplanation from '@/components/RuleExplanation';
 import ModeToggle from '@/components/ModeToggle';
 import ScoreDisplay from '@/components/ScoreDisplay';
@@ -64,32 +65,44 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Rule of 72 Trainer</h1>
-          <p className="text-gray-600">Master the art of calculating investment doubling time</p>
-        </div>
-        
-        <RuleExplanation />
-        <ModeToggle isTimedMode={isTimedMode} onModeChange={handleModeChange} />
-        <ScoreDisplay 
-          currentScore={currentScore} 
-          highestScore={highestScore} 
-          onResetScore={handleResetScore}
-        />
-        
-        <Question 
-          isTimedMode={isTimedMode}
-          onCorrectAnswer={handleCorrectAnswer}
-          onIncorrectAnswer={handleIncorrectAnswer}
-          resetStatus={resetQuestionStatus}
-        />
-
-        <div className="mt-8 text-center text-xs text-gray-500">
-          Practice regularly to improve your mental math skills and financial literacy!
+    <div className="flex flex-col min-h-screen bg-cream newspaper-texture newspaper-font py-8 px-4">
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="max-w-md mx-auto bg-cream border border-gray-300 rounded-lg shadow-md p-6 newspaper-font newspaper-texture">
+          <h1 className="text-2xl font-bold text-center mb-6 newspaper-font">Rule of 72</h1>
+          <SimpleTabs
+            tabs={[
+              {
+                label: 'Practice',
+                children: (
+                  <>
+                    <ModeToggle isTimedMode={isTimedMode} onModeChange={handleModeChange} />
+                    <ScoreDisplay 
+                      currentScore={currentScore} 
+                      highestScore={highestScore} 
+                      onResetScore={handleResetScore}
+                    />
+                    <Question 
+                      isTimedMode={isTimedMode}
+                      onCorrectAnswer={handleCorrectAnswer}
+                      onIncorrectAnswer={handleIncorrectAnswer}
+                      resetStatus={resetQuestionStatus}
+                    />
+                  </>
+                )
+              },
+              {
+                label: 'Learn',
+                children: <RuleExplanation />
+              }
+            ]}
+          />
         </div>
       </div>
+      <footer className="w-full mt-10 flex justify-center newspaper-font">
+        <span className="text-xs text-gray-500 flex items-center gap-1">
+          Made with <span aria-label="yellow heart" role="img">💛</span> by <a href="https://github.com/84rt/" target="_blank" rel="noopener noreferrer" className="underline"><code>84rt</code></a>
+        </span>
+      </footer>
     </div>
   );
 };

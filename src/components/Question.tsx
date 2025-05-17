@@ -1,10 +1,11 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, FC } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import Timer from "./Timer";
 import { toast } from "sonner";
+
+type QuestionType = 'years' | 'rate';
 
 interface QuestionProps {
   isTimedMode: boolean;
@@ -13,13 +14,15 @@ interface QuestionProps {
   resetStatus: boolean;
 }
 
-const Question: React.FC<QuestionProps> = ({ 
+const Question: FC<QuestionProps> = ({ 
   isTimedMode, 
   onCorrectAnswer, 
   onIncorrectAnswer,
   resetStatus 
 }) => {
-  const [interestRate, setInterestRate] = useState(2);
+  const [questionType, setQuestionType] = useState<QuestionType>('years');
+  const [interestRate, setInterestRate] = useState<number>(0);
+  const [yearsToDouble, setYearsToDouble] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackType, setFeedbackType] = useState<"correct" | "incorrect" | null>(null);
@@ -29,9 +32,20 @@ const Question: React.FC<QuestionProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const generateNewQuestion = () => {
-    // Generate random interest rate between 1 and 20, in 0.5 increments
-    const newRate = (Math.floor(Math.random() * 39) + 2) / 2;
-    setInterestRate(newRate);
+    // Randomly choose question type
+    const newQuestionType: QuestionType = Math.random() > 0.5 ? 'years' : 'rate';
+    setQuestionType(newQuestionType);
+    
+    if (newQuestionType === 'years') {
+      // For years question: generate random interest rate (1-20% in 0.5% increments)
+      const newRate = (Math.floor(Math.random() * 39) + 2) / 2;
+      setInterestRate(newRate);
+    } else {
+      // For rate question: generate random years to double (2-36 years in 0.5 year increments)
+      const newYears = (Math.floor(Math.random() * 69) + 4) / 2;
+      setYearsToDouble(newYears);
+    }
+    
     setUserAnswer("");
     setFeedbackMessage("");
     setFeedbackType(null);
@@ -49,18 +63,38 @@ const Question: React.FC<QuestionProps> = ({
       return;
     }
 
-    const exactAnswer = 72 / interestRate;
-    const lowerBound = exactAnswer - 0.5;
-    const upperBound = exactAnswer + 0.5;
-    
-    if (parsedAnswer >= lowerBound && parsedAnswer <= upperBound) {
-      setFeedbackMessage(`Correct! The exact answer is ${exactAnswer.toFixed(2)} years.`);
-      setFeedbackType("correct");
-      onCorrectAnswer();
+    if (questionType === 'years') {
+      const exactAnswer = 72 / interestRate;
+      // Use 10% tolerance or 0.5, whichever is larger
+      const tolerance = Math.max(0.5, exactAnswer * 0.1);
+      const lowerBound = exactAnswer - tolerance;
+      const upperBound = exactAnswer + tolerance;
+      
+      if (parsedAnswer >= lowerBound && parsedAnswer <= upperBound) {
+        setFeedbackMessage(`Correct! The exact answer is ${exactAnswer.toFixed(2)} years.`);
+        setFeedbackType("correct");
+        onCorrectAnswer();
+      } else {
+        setFeedbackMessage(`Incorrect. The answer is ${exactAnswer.toFixed(2)} years.`);
+        setFeedbackType("incorrect");
+        onIncorrectAnswer();
+      }
     } else {
-      setFeedbackMessage(`Incorrect. The answer is ${exactAnswer.toFixed(2)} years.`);
-      setFeedbackType("incorrect");
-      onIncorrectAnswer();
+      const exactAnswer = 72 / yearsToDouble;
+      // Use 10% tolerance or 0.5, whichever is larger
+      const tolerance = Math.max(0.5, exactAnswer * 0.1);
+      const lowerBound = exactAnswer - tolerance;
+      const upperBound = exactAnswer + tolerance;
+      
+      if (parsedAnswer >= lowerBound && parsedAnswer <= upperBound) {
+        setFeedbackMessage(`Correct! The exact answer is ${exactAnswer.toFixed(1)}%.`);
+        setFeedbackType("correct");
+        onCorrectAnswer();
+      } else {
+        setFeedbackMessage(`Incorrect. The answer is ${exactAnswer.toFixed(1)}%.`);
+        setFeedbackType("incorrect");
+        onIncorrectAnswer();
+      }
     }
     
     setIsQuestionActive(false);
@@ -69,8 +103,17 @@ const Question: React.FC<QuestionProps> = ({
   const handleTimeUp = () => {
     if (!isQuestionActive) return;
     
-    const exactAnswer = 72 / interestRate;
-    setFeedbackMessage(`Time's up! The answer is ${exactAnswer.toFixed(2)} years.`);
+    let message = "";
+    
+    if (questionType === 'years') {
+      const exactAnswer = 72 / interestRate;
+      message = `Time's up! The answer is ${exactAnswer.toFixed(2)} years.`;
+    } else {
+      const exactAnswer = 72 / yearsToDouble;
+      message = `Time's up! The answer is ${exactAnswer.toFixed(1)}%.`;
+    }
+    
+    setFeedbackMessage(message);
     setFeedbackType("incorrect");
     onIncorrectAnswer();
     setIsQuestionActive(false);
@@ -113,66 +156,65 @@ const Question: React.FC<QuestionProps> = ({
         timeLimit={10} 
         onTimeUp={handleTimeUp} 
       />
-
-      <Card className="border-2 shadow-sm">
+      <Card className="border-2 shadow-sm mt-6">
         <CardContent className="pt-6">
           <div className="text-center mb-6">
-            <p className="text-sm text-muted-foreground mb-2">How many years will it take for an investment to double with an annual interest rate of:</p>
-            <h2 className="text-4xl font-bold text-primary">{interestRate}%</h2>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex gap-4 mb-4">
+            <p className="text-lg font-medium mb-2">
+              {questionType === 'years' 
+                ? `At ${interestRate}% annual interest, how many years will it take for your money to double?`
+                : `If your money doubles in ${yearsToDouble} years, what is the estimated annual interest rate?`
+              }
+            </p>
+            <div className="flex justify-center items-center gap-2">
               <Input
                 ref={inputRef}
                 type="number"
-                placeholder="Years to double"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                className="w-32 text-center text-lg"
                 disabled={!isQuestionActive}
-                className="text-lg"
-                step="0.1"
+                placeholder="?"
                 min="0"
+                step={questionType === 'years' ? '0.1' : '0.1'}
               />
-              <Button 
-                onClick={handleSubmit} 
-                disabled={!isQuestionActive || userAnswer === ""}
-                className="bg-primary hover:bg-primary-hover text-white"
-              >
-                Submit
-              </Button>
-            </div>
-
-            <div className="flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={toggleHint}
-                className="text-sm"
-                disabled={!isQuestionActive}
-              >
-                {showHint ? "Hide Hint" : "Show Hint"}
-              </Button>
-              <Button 
-                onClick={generateNewQuestion} 
-                variant="outline"
-                className="text-sm"
-                disabled={isQuestionActive}
-              >
-                Next Question
-              </Button>
+              <span>{questionType === 'years' ? 'years' : '%'}</span>
             </div>
           </div>
 
-          {showHint && (
-            <div className="bg-accent p-4 rounded-md mb-4 text-sm">
-              <p><strong>Hint:</strong> Use the Rule of 72 formula: <span className="font-medium">72 ÷ {interestRate} = ?</span></p>
+          <div className="flex justify-center gap-4 mt-4">
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!isQuestionActive}
+              className="w-32"
+            >
+              Submit
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={toggleHint}
+              className="w-32"
+            >
+              {showHint ? 'Hide Hint' : 'Show Hint'}
+            </Button>
+          </div>
+
+          {feedbackMessage && (
+            <div className={`mt-4 p-3 rounded-md text-center ${
+              feedbackType === 'correct' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {feedbackMessage}
             </div>
           )}
 
-          {feedbackMessage && (
-            <div className={`answer-feedback ${feedbackType === "correct" ? "correct-answer" : "incorrect-answer"}`}>
-              {feedbackMessage}
+          {showHint && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>Hint:</strong> {questionType === 'years' 
+                  ? 'Use the Rule of 72: 72 ÷ interest rate = years to double.\nFor example, at 9% interest: 72 ÷ 9 = 8 years to double.'
+                  : 'Use the Rule of 72: 72 ÷ years to double = interest rate.\nFor example, if money doubles in 8 years: 72 ÷ 8 = 9% interest.'
+                }
+              </p>
             </div>
           )}
         </CardContent>

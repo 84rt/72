@@ -10,24 +10,27 @@ interface ScoreDisplayProps {
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ currentScore, highestScore, onResetScore }) => {
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between mb-6 bg-accent/70 p-4 rounded-md shadow-sm border border-secondary">
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-3 md:mb-0">
-        <div className="bg-secondary rounded-md px-4 py-2 w-36 text-center border border-muted">
-          <p className="text-xs font-serif text-muted-foreground">Current Score</p>
-          <p className="text-2xl font-serif font-bold text-primary">{currentScore}</p>
+    <div className="flex flex-col gap-2 mb-4 newspaper-font">
+      <div className="flex flex-row items-center justify-center gap-6">
+        <div className="text-center">
+          <div className="text-xs text-gray-600 mb-1">Current Score</div>
+          <div className="text-2xl font-bold text-[#6e6c64]">{currentScore}</div>
         </div>
-        <div className="bg-secondary rounded-md px-4 py-2 w-36 text-center border border-muted">
-          <p className="text-xs font-serif text-muted-foreground">Highest Score</p>
-          <p className="text-2xl font-serif font-bold text-primary">{highestScore}</p>
+        <div className="h-8 border-l border-gray-300 mx-2" />
+        <div className="text-center">
+          <div className="text-xs text-gray-600 mb-1">Highest Score</div>
+          <div className="text-2xl font-bold text-[#6e6c64]">{highestScore}</div>
         </div>
       </div>
-      <Button 
-        variant="outline" 
-        onClick={onResetScore}
-        className="border-destructive text-destructive hover:bg-destructive/10 font-serif"
-      >
-        Reset Score
-      </Button>
+      <div className="flex flex-row justify-end mt-1">
+        <Button
+          variant="outline"
+          onClick={onResetScore}
+          className="border border-[#847e58] text-[#847e58] hover:bg-[#f7f3e9] hover:text-[#6e6c64] px-3 py-1 text-sm rounded newspaper-font shadow-none"
+        >
+          Reset Score
+        </Button>
+      </div>
     </div>
   );
 };
